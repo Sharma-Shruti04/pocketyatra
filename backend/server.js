@@ -1,63 +1,41 @@
+// server.js
 import http from "http";
-import url from "url";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
-import { handleSignup, handleLogin } from "./controllers/authController.js";
-import { parseJSON } from "./middleware/bodyParser.js";
-import { verifyToken } from "./middleware/authMiddleware.js";
+import { handleAuthRoutes } from "./routes/authRoutes.js";
+import { handleDashboardRoutes } from "./routes/dashboardRoutes.js";
 
 dotenv.config();
 connectDB();
 
-const PORT = process.env.PORT || 5000;
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
 const server = http.createServer(async (req, res) => {
-  const parsedUrl = url.parse(req.url, true);
-  const path = parsedUrl.pathname;
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
-    res.writeHead(204, corsHeaders);
-    res.end();
-    return;
+    res.writeHead(204);
+    return res.end();
   }
 
-  res.writeHead(200, { ...corsHeaders, "Content-Type": "application/json" });
+  try {
+    // 1️⃣ Auth Routes
+    const authHandled = await handleAuthRoutes(req, res);
+    if (authHandled !== false) return;
 
-  // Route: Signup
-  if (path === "/api/signup" && req.method === "POST") {
-    req.body = await parseJSON(req);
-    return handleSignup(req, res);
+    // 2️⃣ Dashboard Routes
+    const dashHandled = await handleDashboardRoutes(req, res);
+    if (dashHandled !== false) return;
+  } catch (err) {
+    console.error("Error handling route:", err);
+    res.writeHead(500, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ message: "Internal server error" }));
   }
 
-  // Route: Login
-  if (path === "/api/login" && req.method === "POST") {
-    req.body = await parseJSON(req);
-    return handleLogin(req, res);
-  }
-
-  // Example of a protected route
-  if (path === "/api/profile" && req.method === "GET") {
-    const isValid = verifyToken(req, res);
-    if (!isValid) return;
-    res.end(JSON.stringify({ message: "Welcome to your profile", user: req.user }));
-    return;
-  }
-
-  if (path === "/api/google-login" && req.method === "POST") {
-  req.body = await parseJSON(req);
-  return handleGoogleLogin(req, res);
-}
-
-
-  // Fallback for unknown routes
-  res.writeHead(404);
+  // Default 404
+  res.writeHead(404, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ message: "Route not found" }));
 });
 
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
