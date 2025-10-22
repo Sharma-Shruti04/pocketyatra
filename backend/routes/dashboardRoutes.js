@@ -1,10 +1,9 @@
-// routes/dashboardRoutes.js
-import { handleDashboard } from "../controllers/dashboardController.js";
+import express from "express";
+import { getDashboardData } from "../controllers/dashboardController.js";
+import { verifyToken } from "../middlewares/authMiddleware.js";
 
-export const handleDashboardRoutes = async (req, res) => {
-  if (req.url.startsWith("/dashboard")) {
-    return handleDashboard(req, res);
-  }
+const router = express.Router();
 
-  return false;
-};
+router.get("/", verifyToken, getDashboardData);
+
+export default router;

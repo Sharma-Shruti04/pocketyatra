@@ -1,186 +1,165 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar"; // ✅ import your navbar component
+import Layout from "../components/Layout";
+import InputField from "../components/InputField";
 
 export default function AccommodationSearch() {
-  const [destination, setDestination] = useState("");
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
-  const [resultsFound, setResultsFound] = useState(true);
+  const [form, setForm] = useState({
+    location: "",
+    checkIn: "",
+    checkOut: "",
+    guests: 1,
+  });
 
-  const handleSearch = () => {
-    // Simulate "no results" for demo purposes
-    setResultsFound(false);
+  const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+
+    if (!form.location || !form.checkIn || !form.checkOut) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    setLoading(true);
+    setHotels([]);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("http://localhost:5000/api/search-hotels", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setHotels(data.hotels || []);
+      } else {
+        alert(data.message || "Failed to fetch hotels.");
+      }
+    } catch (err) {
+      console.error("Hotel search error:", err);
+      alert("Something went wrong while fetching hotels!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        backgroundColor: "#ebf3fb",
-        fontFamily: "'Poppins', sans-serif",
-      }}
-    >
-      <Navbar />
+    <Layout>
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-blue-600">Find Accommodation</h1>
+          <p className="text-gray-500 mt-2">
+            Discover hotels and stays that match your travel plans.
+          </p>
+        </div>
 
-      <div style={{ flex: 1, maxWidth: "900px", margin: "60px auto", textAlign: "center" }}>
-        <h2 style={{ fontWeight: "700", fontSize: "26px", color: "#22335b", marginBottom: "6px" }}>
-          Find Your Perfect Stay
-        </h2>
-        <p style={{ color: "#4f596a", marginBottom: "40px" }}>
-          From luxury resorts to cozy hostels, discover the best places to stay.
-        </p>
-
-        <div
-          style={{
-            background: "white",
-            padding: "18px 24px",
-            borderRadius: "8px",
-            boxShadow: "0 8px 24px rgb(0 0 0 / 0.05)",
-            display: "flex",
-            gap: "16px",
-            alignItems: "center",
-            justifyContent: "center",
-            flexWrap: "wrap",
-          }}
+        {/* Search Form */}
+        <form
+          onSubmit={handleSearch}
+          className="bg-white shadow-md rounded-xl p-6 space-y-4"
         >
-          <div style={{ flex: "1 1 200px", textAlign: "left" }}>
-            <label htmlFor="destination" style={{ fontSize: "12px", fontWeight: "600", color: "#4f596a" }}>
-              Destination
-            </label>
-            <br />
-            <input
-              id="destination"
-              type="text"
-              placeholder="e.g., Goa, Manali"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              style={{
-                width: "180px",
-                height: "34px",
-                borderRadius: "6px",
-                border: "1px solid #ddd",
-                paddingLeft: "8px",
-              }}
+          <InputField
+            label="Location"
+            name="location"
+            value={form.location}
+            onChange={handleChange}
+            placeholder="e.g., Goa, Shimla, Manali"
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <InputField
+              label="Check-In Date"
+              type="date"
+              name="checkIn"
+              value={form.checkIn}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Check-Out Date"
+              type="date"
+              name="checkOut"
+              value={form.checkOut}
+              onChange={handleChange}
             />
           </div>
 
-          <div style={{ flex: "1 1 150px", textAlign: "left" }}>
-            <label htmlFor="checkin" style={{ fontSize: "12px", fontWeight: "600", color: "#4f596a" }}>
-              Check-in
-            </label>
-            <br />
-            <input
-              id="checkin"
-              type="date"
-              value={checkIn}
-              onChange={(e) => setCheckIn(e.target.value)}
-              style={{
-                width: "140px",
-                height: "34px",
-                borderRadius: "6px",
-                border: "1px solid #ddd",
-                paddingLeft: "8px",
-              }}
-            />
-          </div>
-
-          <div style={{ flex: "1 1 150px", textAlign: "left" }}>
-            <label htmlFor="checkout" style={{ fontSize: "12px", fontWeight: "600", color: "#4f596a" }}>
-              Check-out
-            </label>
-            <br />
-            <input
-              id="checkout"
-              type="date"
-              value={checkOut}
-              onChange={(e) => setCheckOut(e.target.value)}
-              style={{
-                width: "140px",
-                height: "34px",
-                borderRadius: "6px",
-                border: "1px solid #ddd",
-                paddingLeft: "8px",
-              }}
-            />
-          </div>
+          <InputField
+            label="Guests"
+            type="number"
+            name="guests"
+            min="1"
+            value={form.guests}
+            onChange={handleChange}
+          />
 
           <button
-            onClick={handleSearch}
-            style={{
-              backgroundColor: "#0b1526",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              height: "34px",
-              padding: "0 22px",
-              cursor: "pointer",
-              fontWeight: "600",
-              marginTop: "20px",
-            }}
+            type="submit"
+            disabled={loading}
+            className={`w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition ${
+              loading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
           >
-            Search
+            {loading ? "Searching..." : "Search Hotels"}
           </button>
-        </div>
+        </form>
 
-        {!resultsFound && (
-          <div style={{ marginTop: "70px", color: "#7a8497", fontWeight: "600" }}>
-            <svg
-              width="40"
-              height="40"
-              fill="none"
-              stroke="#7a8497"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              viewBox="0 0 24 24"
-              style={{ marginBottom: "10px" }}
-            >
-              <path d="M3 6h18M3 12h18M3 18h18" />
-            </svg>
-            <div>No accommodations found</div>
-            <small>Try a different destination or dates.</small>
+        {/* Results Section */}
+        {hotels.length > 0 ? (
+          <div className="bg-white shadow-lg rounded-xl p-6 space-y-4">
+            <h2 className="text-2xl font-semibold text-blue-600 mb-2">
+              Available Hotels
+            </h2>
+
+            <div className="divide-y divide-gray-200">
+              {hotels.map((hotel, index) => (
+                <div
+                  key={index}
+                  className="py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center"
+                >
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      🏨 {hotel.name || "Hotel"}
+                    </p>
+                    <p className="text-gray-600">{hotel.location}</p>
+                    <p className="text-sm text-gray-500">
+                      ⭐ {hotel.rating || "N/A"} | {hotel.rooms || "N/A"} rooms
+                      available
+                    </p>
+                  </div>
+
+                  <div className="mt-2 sm:mt-0 text-right">
+                    <p className="text-blue-600 font-semibold">
+                      ₹{hotel.pricePerNight}/night
+                    </p>
+                    <button className="bg-green-500 text-white text-sm px-3 py-1 rounded-md mt-2 hover:bg-green-600 transition">
+                      Book Now
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+        ) : (
+          !loading && (
+            <p className="text-center text-gray-500">
+              No hotels found. Try searching a different location.
+            </p>
+          )
         )}
       </div>
-
-      <footer
-        style={{
-          background: "white",
-          borderTop: "1px solid #eaeaea",
-          padding: "8px 24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          color: "#999",
-          fontSize: "11px",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div
-            style={{
-              backgroundColor: "#0b1526",
-              color: "white",
-              borderRadius: "6px",
-              padding: "4px 6px",
-              fontWeight: "600",
-              fontSize: "12px",
-            }}
-          >
-            🏨
-          </div>
-          PocketYatra
-          <span style={{ fontWeight: "400", color: "#aaa", marginLeft: "6px" }}>
-            Your smart travel companion
-          </span>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          Crafted with <span style={{ color: "red" }}>❤️</span> for travelers worldwide
-          <br />
-          Powered by AI · Real-time data · Smart recommendations
-        </div>
-      </footer>
-    </div>
+    </Layout>
   );
 }

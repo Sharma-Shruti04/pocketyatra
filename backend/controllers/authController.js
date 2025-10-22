@@ -1,3 +1,4 @@
+// controllers/authController.js
 import { User } from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -7,103 +8,86 @@ import dotenv from "dotenv";
 dotenv.config();
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// ------------------ SIGNUP ------------------
-export const handleSignup = async (req, res) => {
+// ------------------ REGISTER ------------------
+export const registerUser = async (req, res) => {
   try {
     const { email, password, name } = req.body;
+
     if (!email || !password) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ message: "All fields required" }));
+      return res.status(400).json({ message: "All fields required" });
     }
 
-    // Check if user exists
-    let existing = await User.findOne({ email });
-    if (existing) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ message: "User already exists" }));
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashed, name });
-    await user.save();
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ email, password: hashedPassword, name });
+    await newUser.save();
 
-    res.writeHead(201, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ message: "User created", user }));
+    res.status(201).json({ message: "User created successfully", user: newUser });
   } catch (err) {
-    console.error("Signup error:", err);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ message: "Server error", error: err.message }));
+    console.error("Register error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 // ------------------ LOGIN ------------------
-export const handleLogin = async (req, res) => {
+export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     if (!email || !password) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ message: "All fields required" }));
+      return res.status(400).json({ message: "All fields required" });
     }
 
     const user = await User.findOne({ email });
-    if (!user) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ message: "User not found" }));
-    }
+    if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password || "");
-    if (!isMatch) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ message: "Invalid credentials" }));
-    }
+    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "2h" });
 
-    res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ message: "Login successful", token, user }));
+    res.status(200).json({ message: "Login successful", token, user });
   } catch (err) {
     console.error("Login error:", err);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ message: "Server error", error: err.message }));
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 // ------------------ GOOGLE LOGIN ------------------
-export const handleGoogleLogin = async (req, res) => {
+export const googleLogin = async (req, res) => {
   try {
     const { tokenId } = req.body;
+
     if (!tokenId) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ message: "No Google token provided" }));
+      return res.status(400).json({ message: "No Google token provided" });
     }
 
-    // Verify token with Google
     const ticket = await googleClient.verifyIdToken({
       idToken: tokenId,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
-    const payload = ticket.getPayload();
-    const { email, sub: googleId, name } = payload;
 
-    // Find or create user
+    const payload = ticket.getPayload();
+    const { email, name, sub: googleId } = payload;
+
     let user = await User.findOne({ email });
     if (!user) {
       user = new User({ email, name, googleId });
       await user.save();
     }
 
-    // Create JWT
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "2h" });
 
-    res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ message: "Google login successful", token, user }));
+    res.status(200).json({ message: "Google login successful", token, user });
   } catch (err) {
     console.error("Google login error:", err);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ message: "Google login failed", error: err.message }));
+    res.status(500).json({ message: "Google login failed", error: err.message });
   }
 };
-
 
 
 
@@ -123,22 +107,28 @@ export const handleGoogleLogin = async (req, res) => {
 // export const handleSignup = async (req, res) => {
 //   try {
 //     const { email, password, name } = req.body;
-//     if (!email || !password)
-//       return res.writeHead(400).end(JSON.stringify({ message: "All fields required" }));
+//     if (!email || !password) {
+//       res.writeHead(400, { "Content-Type": "application/json" });
+//       return res.end(JSON.stringify({ message: "All fields required" }));
+//     }
 
-//     const existing = await User.findOne({ email });
-//     if (existing)
-//       return res.writeHead(400).end(JSON.stringify({ message: "User already exists" }));
+//     // Check if user exists
+//     let existing = await User.findOne({ email });
+//     if (existing) {
+//       res.writeHead(400, { "Content-Type": "application/json" });
+//       return res.end(JSON.stringify({ message: "User already exists" }));
+//     }
 
 //     const hashed = await bcrypt.hash(password, 10);
 //     const user = new User({ email, password: hashed, name });
 //     await user.save();
 
 //     res.writeHead(201, { "Content-Type": "application/json" });
-//     res.end(JSON.stringify({ message: "Signup successful" }));
+//     return res.end(JSON.stringify({ message: "User created", user }));
 //   } catch (err) {
-//     res.writeHead(500);
-//     res.end(JSON.stringify({ message: "Server error", error: err.message }));
+//     console.error("Signup error:", err);
+//     res.writeHead(500, { "Content-Type": "application/json" });
+//     return res.end(JSON.stringify({ message: "Server error", error: err.message }));
 //   }
 // };
 
@@ -146,41 +136,52 @@ export const handleGoogleLogin = async (req, res) => {
 // export const handleLogin = async (req, res) => {
 //   try {
 //     const { email, password } = req.body;
+//     if (!email || !password) {
+//       res.writeHead(400, { "Content-Type": "application/json" });
+//       return res.end(JSON.stringify({ message: "All fields required" }));
+//     }
+
 //     const user = await User.findOne({ email });
-//     if (!user)
-//       return res.writeHead(400).end(JSON.stringify({ message: "User not found" }));
+//     if (!user) {
+//       res.writeHead(400, { "Content-Type": "application/json" });
+//       return res.end(JSON.stringify({ message: "User not found" }));
+//     }
 
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch)
-//       return res.writeHead(400).end(JSON.stringify({ message: "Invalid credentials" }));
+//     const isMatch = await bcrypt.compare(password, user.password || "");
+//     if (!isMatch) {
+//       res.writeHead(400, { "Content-Type": "application/json" });
+//       return res.end(JSON.stringify({ message: "Invalid credentials" }));
+//     }
 
-//     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+//     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "2h" });
 
 //     res.writeHead(200, { "Content-Type": "application/json" });
-//     res.end(JSON.stringify({ message: "Login successful", token }));
+//     return res.end(JSON.stringify({ message: "Login successful", token, user }));
 //   } catch (err) {
-//     res.writeHead(500);
-//     res.end(JSON.stringify({ message: "Server error", error: err.message }));
+//     console.error("Login error:", err);
+//     res.writeHead(500, { "Content-Type": "application/json" });
+//     return res.end(JSON.stringify({ message: "Server error", error: err.message }));
 //   }
 // };
 
 // // ------------------ GOOGLE LOGIN ------------------
 // export const handleGoogleLogin = async (req, res) => {
 //   try {
-//     const { credential } = req.body;
-//     if (!credential)
-//       return res.writeHead(400).end(JSON.stringify({ message: "No Google token provided" }));
+//     const { tokenId } = req.body;
+//     if (!tokenId) {
+//       res.writeHead(400, { "Content-Type": "application/json" });
+//       return res.end(JSON.stringify({ message: "No Google token provided" }));
+//     }
 
-//     // Verify Google token
+//     // Verify token with Google
 //     const ticket = await googleClient.verifyIdToken({
-//       idToken: credential,
+//       idToken: tokenId,
 //       audience: process.env.GOOGLE_CLIENT_ID,
 //     });
-
 //     const payload = ticket.getPayload();
-//     const { email, name, sub: googleId } = payload;
+//     const { email, sub: googleId, name } = payload;
 
-//     // Check or create user
+//     // Find or create user
 //     let user = await User.findOne({ email });
 //     if (!user) {
 //       user = new User({ email, name, googleId });
@@ -191,9 +192,104 @@ export const handleGoogleLogin = async (req, res) => {
 //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "2h" });
 
 //     res.writeHead(200, { "Content-Type": "application/json" });
-//     res.end(JSON.stringify({ message: "Google login successful", token, user }));
+//     return res.end(JSON.stringify({ message: "Google login successful", token, user }));
 //   } catch (err) {
-//     res.writeHead(500);
-//     res.end(JSON.stringify({ message: "Google login failed", error: err.message }));
+//     console.error("Google login error:", err);
+//     res.writeHead(500, { "Content-Type": "application/json" });
+//     return res.end(JSON.stringify({ message: "Google login failed", error: err.message }));
 //   }
 // };
+
+
+
+
+
+
+
+// // import { User } from "../models/User.js";
+// // import bcrypt from "bcryptjs";
+// // import jwt from "jsonwebtoken";
+// // import { OAuth2Client } from "google-auth-library";
+// // import dotenv from "dotenv";
+
+// // dotenv.config();
+// // const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// // // ------------------ SIGNUP ------------------
+// // export const handleSignup = async (req, res) => {
+// //   try {
+// //     const { email, password, name } = req.body;
+// //     if (!email || !password)
+// //       return res.writeHead(400).end(JSON.stringify({ message: "All fields required" }));
+
+// //     const existing = await User.findOne({ email });
+// //     if (existing)
+// //       return res.writeHead(400).end(JSON.stringify({ message: "User already exists" }));
+
+// //     const hashed = await bcrypt.hash(password, 10);
+// //     const user = new User({ email, password: hashed, name });
+// //     await user.save();
+
+// //     res.writeHead(201, { "Content-Type": "application/json" });
+// //     res.end(JSON.stringify({ message: "Signup successful" }));
+// //   } catch (err) {
+// //     res.writeHead(500);
+// //     res.end(JSON.stringify({ message: "Server error", error: err.message }));
+// //   }
+// // };
+
+// // // ------------------ LOGIN ------------------
+// // export const handleLogin = async (req, res) => {
+// //   try {
+// //     const { email, password } = req.body;
+// //     const user = await User.findOne({ email });
+// //     if (!user)
+// //       return res.writeHead(400).end(JSON.stringify({ message: "User not found" }));
+
+// //     const isMatch = await bcrypt.compare(password, user.password);
+// //     if (!isMatch)
+// //       return res.writeHead(400).end(JSON.stringify({ message: "Invalid credentials" }));
+
+// //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+// //     res.writeHead(200, { "Content-Type": "application/json" });
+// //     res.end(JSON.stringify({ message: "Login successful", token }));
+// //   } catch (err) {
+// //     res.writeHead(500);
+// //     res.end(JSON.stringify({ message: "Server error", error: err.message }));
+// //   }
+// // };
+
+// // // ------------------ GOOGLE LOGIN ------------------
+// // export const handleGoogleLogin = async (req, res) => {
+// //   try {
+// //     const { credential } = req.body;
+// //     if (!credential)
+// //       return res.writeHead(400).end(JSON.stringify({ message: "No Google token provided" }));
+
+// //     // Verify Google token
+// //     const ticket = await googleClient.verifyIdToken({
+// //       idToken: credential,
+// //       audience: process.env.GOOGLE_CLIENT_ID,
+// //     });
+
+// //     const payload = ticket.getPayload();
+// //     const { email, name, sub: googleId } = payload;
+
+// //     // Check or create user
+// //     let user = await User.findOne({ email });
+// //     if (!user) {
+// //       user = new User({ email, name, googleId });
+// //       await user.save();
+// //     }
+
+// //     // Create JWT
+// //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "2h" });
+
+// //     res.writeHead(200, { "Content-Type": "application/json" });
+// //     res.end(JSON.stringify({ message: "Google login successful", token, user }));
+// //   } catch (err) {
+// //     res.writeHead(500);
+// //     res.end(JSON.stringify({ message: "Google login failed", error: err.message }));
+// //   }
+// // };

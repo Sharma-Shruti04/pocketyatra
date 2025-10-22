@@ -1,9 +1,17 @@
-export default function InputField({ label, type = "text", value, onChange, placeholder }) {
+export default function InputField({
+  label,
+  type = "text",
+  name,
+  value,
+  onChange,
+  placeholder,
+}) {
   return (
     <div className="flex flex-col space-y-1">
       <label className="text-gray-700 font-medium">{label}</label>
       <input
         type={type}
+        name={name}             // ✅ ADD THIS LINE
         value={value}
         onChange={onChange}
         placeholder={placeholder}

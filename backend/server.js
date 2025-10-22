@@ -1,41 +1,79 @@
-// server.js
-import http from "http";
+import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
-import { connectDB } from "./config/db.js";
-import { handleAuthRoutes } from "./routes/authRoutes.js";
-import { handleDashboardRoutes } from "./routes/dashboardRoutes.js";
+import connectDB from "./config/db.js"; // ✔ correct for default export
+
+import authRouter from "./routes/authRoutes.js";
+import dashboardRouter from "./routes/dashboardRoutes.js";
+import flightRouter from "./routes/flightRoutes.js";
+import destinationRoutes from "./routes/destinationRoutes.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 dotenv.config();
 connectDB();
 
-const server = http.createServer(async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+const app = express();
+const PORT = process.env.PORT || 5000;
 
-  if (req.method === "OPTIONS") {
-    res.writeHead(204);
-    return res.end();
-  }
+// 🔧 Middlewares
+app.use(cors());
+app.use(express.json());
 
-  try {
-    // 1️⃣ Auth Routes
-    const authHandled = await handleAuthRoutes(req, res);
-    if (authHandled !== false) return;
+// ✅ Routes
+app.use("/api/auth", authRouter);
+app.use("/api/dashboard", dashboardRouter);
+app.use("/api/flights", flightRouter);
+app.use("/api/destinations", destinationRoutes);
+// Health check
+app.get("/", (req, res) => res.send("✅ PocketYatra Backend Running"));
 
-    // 2️⃣ Dashboard Routes
-    const dashHandled = await handleDashboardRoutes(req, res);
-    if (dashHandled !== false) return;
-  } catch (err) {
-    console.error("Error handling route:", err);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ message: "Internal server error" }));
-  }
+// Centralized error handler
+app.use(errorHandler);
 
-  // Default 404
-  res.writeHead(404, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ message: "Route not found" }));
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+
+
+// New server code
+
+// import http from "http";
+// import dotenv from "dotenv";
+// import { connectDB } from "./config/db.js";
+// import { handleAuthRoutes } from "./routes/authRoutes.js";
+// import { handleDashboardRoutes } from "./routes/dashboardRoutes.js";
+// import { handleFlightRoutes } from "./routes/flightRoutes.js";
+
+// dotenv.config();
+// connectDB();
+
+// const server = http.createServer(async (req, res) => {
+//   res.setHeader("Access-Control-Allow-Origin", "*");
+//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+//   if (req.method === "OPTIONS") {
+//     res.writeHead(204);
+//     return res.end();
+//   }
+
+//   try {
+//     if (await handleAuthRoutes(req, res)) return;
+//     if (await handleDashboardRoutes(req, res)) return;
+//     if (await handleFlightRoutes(req, res)) return;
+//   } catch (err) {
+//     console.error("Server error:", err);
+//     res.writeHead(500, { "Content-Type": "application/json" });
+//     res.end(JSON.stringify({ message: "Internal server error" }));
+//   }
+
+//   res.writeHead(404, { "Content-Type": "application/json" });
+//   res.end(JSON.stringify({ message: "Route not found" }));
+// });
+
+// const PORT = process.env.PORT || 5000;
+// server.listen(PORT, () =>
+//   console.log(`🚀 Server running on http://localhost:${PORT}`)
+// );
