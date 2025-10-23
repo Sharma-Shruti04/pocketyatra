@@ -60,27 +60,45 @@ export const loginUser = async (req, res) => {
 // ------------------ GOOGLE LOGIN ------------------
 export const googleLogin = async (req, res) => {
   try {
-    const { tokenId } = req.body;
+    console.log("Google login request received:", req.body);
+    
+    const { tokenId, credential } = req.body;
+    const googleToken = tokenId || credential;
 
-    if (!tokenId) {
+    if (!googleToken) {
+      console.log("No Google token provided");
       return res.status(400).json({ message: "No Google token provided" });
     }
 
+    console.log("Verifying Google token...");
     const ticket = await googleClient.verifyIdToken({
-      idToken: tokenId,
+      idToken: googleToken,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
+    console.log("Google payload:", { email: payload.email, name: payload.name });
+    
     const { email, name, sub: googleId } = payload;
+
+    if (!email) {
+      console.log("No email found in Google token");
+      return res.status(400).json({ message: "Invalid Google token - no email found" });
+    }
 
     let user = await User.findOne({ email });
     if (!user) {
+      console.log("Creating new user for Google login");
       user = new User({ email, name, googleId });
+      await user.save();
+    } else if (!user.googleId) {
+      console.log("Updating existing user with Google ID");
+      user.googleId = googleId;
       await user.save();
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "2h" });
+    console.log("Google login successful for user:", user.email);
 
     res.status(200).json({ message: "Google login successful", token, user });
   } catch (err) {

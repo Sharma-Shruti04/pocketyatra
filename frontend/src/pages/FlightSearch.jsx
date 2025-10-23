@@ -203,10 +203,12 @@
 
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import InputField from "../components/InputField";
 
 export default function FlightSearch() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     from: "",
     to: "",
@@ -214,7 +216,6 @@ export default function FlightSearch() {
     returnDate: "",
   });
 
-  const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -229,141 +230,166 @@ export default function FlightSearch() {
       return;
     }
 
-    setLoading(true);
-    setFlights([]);
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const res = await fetch("http://localhost:5000/api/flights", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setFlights(data.flights || []);
-      } else {
-        alert(data.message || "Failed to fetch flights.");
-      }
-    } catch (err) {
-      console.error("Flight search error:", err);
-      alert("Something went wrong!");
-    } finally {
-      setLoading(false);
-    }
+    // Navigate to results page with search parameters
+    const searchParams = new URLSearchParams({
+      from: form.from,
+      to: form.to,
+      depart: form.depart,
+      ...(form.returnDate && { returnDate: form.returnDate })
+    });
+    
+    navigate(`/flights/results?${searchParams.toString()}`);
   };
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-blue-600">Search Flights</h1>
-          <p className="text-gray-500 mt-2">
-            Find the best flights for your next trip.
-          </p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="text-center bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-6 shadow-lg">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+              </div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                Search Flights
+              </h1>
+              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                Find the best flights for your next adventure. Compare prices and book with confidence.
+              </p>
+            </div>
 
-        {/* Flight Search Form */}
-        <form
-          onSubmit={handleSearch}
-          className="bg-white shadow-md rounded-xl p-6 space-y-4"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InputField
-              label="From"
-              name="from"
-              value={form.from}
-              onChange={handleChange}
-              placeholder="e.g., Delhi"
-            />
-            <InputField
-              label="To"
-              name="to"
-              value={form.to}
-              onChange={handleChange}
-              placeholder="e.g., Mumbai"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InputField
-              label="Departure Date"
-              type="date"
-              name="depart"
-              value={form.depart}
-              onChange={handleChange}
-            />
-            <InputField
-              label="Return Date (optional)"
-              type="date"
-              name="returnDate"
-              value={form.returnDate}
-              onChange={handleChange}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition ${
-              loading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
-          >
-            {loading ? "Searching flights..." : "Search Flights"}
-          </button>
-        </form>
-
-        {/* Flight Results */}
-        {flights.length > 0 ? (
-          <div className="bg-white shadow-lg rounded-xl p-6 space-y-4">
-            <h2 className="text-2xl font-semibold text-blue-600 mb-2">
-              Available Flights
-            </h2>
-
-            <div className="divide-y divide-gray-200">
-              {flights.map((flight, index) => (
-                <div
-                  key={index}
-                  className="py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center"
-                >
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      ✈️ {flight.airline || "Unknown Airline"}
-                    </p>
-                    <p className="text-gray-600">
-                      {flight.from} → {flight.to}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {flight.departureTime} - {flight.arrivalTime}
-                    </p>
+            {/* Flight Search Form */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+              <form onSubmit={handleSearch} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700 flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      From
+                    </label>
+                    <input
+                      name="from"
+                      value={form.from}
+                      onChange={handleChange}
+                      placeholder="e.g., Delhi"
+                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    />
                   </div>
-
-                  <div className="mt-2 sm:mt-0 text-right">
-                    <p className="text-blue-600 font-semibold">
-                      ₹{flight.price}
-                    </p>
-                    <button className="bg-green-500 text-white text-sm px-3 py-1 rounded-md mt-2 hover:bg-green-600 transition">
-                      Book Now
-                    </button>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700 flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      To
+                    </label>
+                    <input
+                      name="to"
+                      value={form.to}
+                      onChange={handleChange}
+                      placeholder="e.g., Mumbai"
+                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    />
                   </div>
                 </div>
-              ))}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700 flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Departure Date
+                    </label>
+                    <input
+                      type="date"
+                      name="depart"
+                      value={form.depart}
+                      onChange={handleChange}
+                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700 flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Return Date (optional)
+                    </label>
+                    <input
+                      type="date"
+                      name="returnDate"
+                      value={form.returnDate}
+                      onChange={handleChange}
+                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center ${
+                    loading ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
+                >
+                  {loading ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Searching flights...
+                    </div>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      Search Flights
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+
+            {/* Features Section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 text-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Best Prices</h3>
+                <p className="text-gray-600 text-sm">Compare prices from multiple airlines to find the best deals</p>
+              </div>
+              
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 text-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Real-time Updates</h3>
+                <p className="text-gray-600 text-sm">Get instant updates on flight schedules and price changes</p>
+              </div>
+              
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 text-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Easy Booking</h3>
+                <p className="text-gray-600 text-sm">Book your flights with just a few clicks and secure payment</p>
+              </div>
             </div>
           </div>
-        ) : (
-          !loading && (
-            <p className="text-center text-gray-500">
-              No flights found. Try searching for another route.
-            </p>
-          )
-        )}
+        </div>
       </div>
     </Layout>
   );

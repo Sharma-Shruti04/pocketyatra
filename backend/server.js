@@ -7,7 +7,10 @@ import authRouter from "./routes/authRoutes.js";
 import dashboardRouter from "./routes/dashboardRoutes.js";
 import flightRouter from "./routes/flightRoutes.js";
 import destinationRoutes from "./routes/destinationRoutes.js";
+import accommodationRouter from "./routes/accommodationRoutes.js";
+import tripPlannerRouter from "./routes/tripPlannerRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import profileRouter from "./routes/profileRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -24,6 +27,10 @@ app.use("/api/auth", authRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/flights", flightRouter);
 app.use("/api/destinations", destinationRoutes);
+// Mount new routers under /api to match frontend calls
+app.use("/api", accommodationRouter); // provides POST /api/search-hotels
+app.use("/api", tripPlannerRouter);   // provides POST /api/plan-trip
+app.use("/api", profileRouter);       // provides GET/PUT /api/profile
 // Health check
 app.get("/", (req, res) => res.send("✅ PocketYatra Backend Running"));
 

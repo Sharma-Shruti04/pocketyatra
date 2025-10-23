@@ -31,16 +31,21 @@ export default function Login() {
 
   // 🔹 Google Login Handler
   const handleGoogleSuccess = async (response) => {
+    console.log("Google login response:", response);
+    
     if (!response.credential) {
       alert("Google login failed — missing credential.");
       return;
     }
 
     try {
-      const res = await API.post("/google-login", {
+      console.log("Sending Google login request to backend...");
+      const res = await API.post("/auth/google-login", {
         credential: response.credential,
       });
 
+      console.log("Google login response from backend:", res.data);
+      
       localStorage.setItem("token", res.data.token);
       if (res.data.user) {
         localStorage.setItem("user", JSON.stringify(res.data.user));
@@ -59,61 +64,94 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* 🔹 Header Section */}
-      <header className="flex items-center bg-white shadow-md px-6 py-4">
-        <img src={logo} alt="Pocket Yatra Logo" className="h-10 w-10 mr-3" />
-        <h1 className="text-2xl font-bold text-blue-600">Pocket Yatra</h1>
+      <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-white/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center py-4">
+            <img src={logo} alt="PocketYatra Logo" className="h-12 w-12 rounded-full shadow-md mr-3" />
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                PocketYatra
+              </h1>
+              <p className="text-xs text-gray-500">Your Travel Companion</p>
+            </div>
+          </div>
+        </div>
       </header>
 
       {/* 🔹 Login Form */}
-      <div className="flex-grow flex items-center justify-center">
-        <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8 mx-auto mt-10">
-          <h2 className="text-2xl font-semibold text-center text-blue-600 mb-6">
-            Login
-          </h2>
+      <div className="flex items-center justify-center min-h-[calc(100vh-80px)] py-12">
+        <div className="w-full max-w-md">
+          <div className="bg-white/80 backdrop-blur-sm shadow-2xl rounded-3xl p-8 border border-white/20">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-4 shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
+                Welcome Back
+              </h2>
+              <p className="text-gray-600">Sign in to continue your journey</p>
+            </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <InputField
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-            />
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="space-y-4">
+                <InputField
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                />
 
-            <InputField
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-            />
+                <InputField
+                  label="Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                />
+              </div>
 
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-            >
-              Login
-            </button>
-          </form>
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                Sign In
+              </button>
+            </form>
 
-          {/* 🔹 Google Login */}
-          <div className="mt-6 flex flex-col items-center">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-            />
-            <p className="text-xs text-gray-500 mt-2">Continue with Google</p>
+            {/* 🔹 Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+
+            {/* 🔹 Google Login */}
+            <div className="flex flex-col items-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+              />
+            </div>
+
+            {/* 🔹 Signup Redirect */}
+            <div className="text-center mt-8">
+              <p className="text-gray-600">
+                Don't have an account?{" "}
+                <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
+                  Create one now
+                </Link>
+              </p>
+            </div>
           </div>
-
-          {/* 🔹 Signup Redirect */}
-          <p className="text-center text-sm mt-6">
-            Don’t have an account?{" "}
-            <Link to="/signup" className="text-blue-600 hover:underline">
-              Sign up
-            </Link>
-          </p>
         </div>
       </div>
     </div>

@@ -27,7 +27,7 @@ export default function FlightResults() {
         });
 
         const data = await res.json();
-        if (res.ok) setFlights(data.flights || []);
+        if (res.ok) setFlights(data.data || data.flights || []);
         else alert(data.message || "Failed to fetch flights");
       } catch (err) {
         console.error(err);
@@ -40,7 +40,7 @@ export default function FlightResults() {
     if (from && to && depart) fetchFlights();
     else {
       alert("Invalid search query");
-      navigate("/flights/search");
+      navigate("/flights");
     }
   }, [from, to, depart, returnDate, navigate]);
 
@@ -58,11 +58,15 @@ export default function FlightResults() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {flights.map((f, idx) => (
               <div key={idx} className="border p-4 rounded shadow hover:shadow-md transition">
-                <p><strong>Flight:</strong> {f.flightNumber}</p>
-                <p><strong>Route:</strong> {f.from} → {f.to}</p>
-                <p><strong>Departure:</strong> {f.depart}</p>
-                <p><strong>Arrival:</strong> {f.arrival}</p>
-                <p><strong>Price:</strong> ${f.price}</p>
+                <p><strong>Airline:</strong> {f.airline || "Unknown Airline"}</p>
+                <p><strong>Route:</strong> {from} → {to}</p>
+                <p><strong>Departure:</strong> {f.departure_time || f.depart}</p>
+                <p><strong>Arrival:</strong> {f.arrival_time || f.arrival}</p>
+                <p><strong>Duration:</strong> {f.duration || "N/A"}</p>
+                <p><strong>Price:</strong> ₹{f.price_in_inr || f.price || "N/A"}</p>
+                <button className="mt-2 bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition">
+                  Book Now
+                </button>
               </div>
             ))}
           </div>

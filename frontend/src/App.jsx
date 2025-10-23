@@ -1,11 +1,15 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import SmartTripPlanner from "./pages/SmartTripPlanner";
 import FlightSearch from "./pages/FlightSearch";
+import FlightResults from "./pages/FlightResults";
 import DestinationFinder from "./pages/DestinationFinder";
 import AccommodationSearch from "./pages/AccommodationSearch";
+import Profile from "./pages/Profile";
+import Currency from "./pages/Currency";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -14,9 +18,9 @@ const ProtectedRoute = ({ children }) => {
 
 export default function App() {
   return (
-
+    //<Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
@@ -33,6 +37,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <FlightSearch />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/flights/results"
+          element={
+            <ProtectedRoute>
+              <FlightResults />
             </ProtectedRoute>
           }
         />
@@ -60,8 +72,24 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/currency"
+          element={
+            <ProtectedRoute>
+              <Currency />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-
+    //</Router>
   );
 }
 

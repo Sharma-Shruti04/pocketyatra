@@ -15,12 +15,19 @@
 import mongoose from "mongoose";
 
 const connectDB = async () => {
+  const uri = process.env.MONGO_URI;
+
+  if (!uri) {
+    console.warn("⚠️  MONGO_URI not set. Continuing without database connection.");
+    return;
+  }
+
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(uri);
     console.log("✅ MongoDB connected");
   } catch (err) {
-    console.error("❌ DB Connection error:", err);
-    process.exit(1);
+    console.error("❌ DB Connection error:", err.message || err);
+    console.warn("⚠️  Continuing without DB. Features requiring DB will be unavailable.");
   }
 };
 

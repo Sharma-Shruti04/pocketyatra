@@ -49,9 +49,9 @@ export default function Navbar({ user }) {
 
       {/* Right Section */}
       <div className="flex items-center gap-4">
-        <button className="px-3 py-1 rounded border hover:bg-gray-100 flex items-center gap-1">
+        <Link to="/currency" className="px-3 py-1 rounded border hover:bg-gray-100 flex items-center gap-1">
           <FaDollarSign /> Currency
-        </button>
+        </Link>
 
         {user && (
           <div className="flex items-center gap-2">

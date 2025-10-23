@@ -19,11 +19,11 @@ export const getDashboardData = async (req, res) => {
     const upcoming = trips.filter((t) => new Date(t.date) > new Date()).length;
 
     res.status(200).json({
-      name: user.name,
+      user: { name: user.name },
       totalTrips,
-      totalBudget,
-      upcoming,
-      trips,
+      savedBudgets: totalBudget,
+      upcomingFlights: upcoming,
+      recentTrips: trips,
     });
   } catch (err) {
     console.error("Dashboard error:", err);
