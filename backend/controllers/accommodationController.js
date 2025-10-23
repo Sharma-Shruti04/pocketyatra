@@ -4,6 +4,7 @@ dotenv.config();
 
 export const searchHotels = async (req, res) => {
   try {
+    console.log('Request body:', req.body);
     const { location, checkIn, checkOut, guests } = req.body;
 
     if (!location || !checkIn || !checkOut) {
@@ -55,9 +56,12 @@ export const searchHotels = async (req, res) => {
     const params = {
       engine: "google_hotels",
       q: `hotels in ${location}`,
-      check_in: checkIn,
-      check_out: checkOut,
+      check_in_date: checkIn,
+      check_out_date: checkOut,
       adults: guests || 1,
+      currency: "USD",
+      gl: "us",
+      hl: "en",
       api_key: process.env.SERP_API_KEY
     };
 
@@ -69,13 +73,15 @@ export const searchHotels = async (req, res) => {
       hotels = response.data.properties.slice(0, 8).map(property => ({
         name: property.name || "Hotel",
         location: property.address || location,
-        rating: property.rating ? property.rating.toString() : "N/A",
+        rating: property.overall_rating ? property.overall_rating.toString() : "N/A",
         rooms: property.rooms_available ? property.rooms_available.toString() : "N/A",
         pricePerNight: property.price ? parseInt(property.price.replace(/[^\d]/g, '')) : 0,
         amenities: property.amenities || ["WiFi", "Parking"],
-        image: property.thumbnail || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400",
+        image: property.images && property.images[0] ? property.images[0].thumbnail : "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400",
         description: property.description || "Comfortable accommodation",
-        link: property.link || "#"
+        link: property.link || "#",
+        reviews: property.reviews || 0,
+        hotelClass: property.hotel_class || "Hotel"
       }));
     }
 
