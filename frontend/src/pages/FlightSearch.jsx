@@ -1,396 +1,240 @@
-// import React, { useState } from "react";
-// import Navbar from "../components/Navbar"; 
-// export default function FlightSearch() {
-//   const [from, setFrom] = useState("");
-//   const [to, setTo] = useState("");
-//   const [depart, setDepart] = useState("");
-//   const [returnDate, setReturnDate] = useState("");
-//   const [flightsFound, setFlightsFound] = useState(true);
+import React, { useState } from 'react';
+import axios from 'axios';
 
-//   const handleSearch = () => {
-//     setFlightsFound(false); // simulate no flights
-//   };
+/**
+ * Single component combining the Flight Search Form and Flight Results display.
+ * This component manages the state for search inputs and results data for ONE-WAY trips.
+ */
+const FlightSearch = () => {
+    // === State Management ===
+    const [from, setFrom] = useState(''); // IATA Code (e.g., 'DEL')
+    const [to, setTo] = useState('');     // IATA Code (e.g., 'BOM')
+    const [depart, setDepart] = useState(''); // YYYY-MM-DD
 
-//   return (
-//     <div
-//       style={{
-//         display: "flex",
-//         flexDirection: "column",
-//         minHeight: "100vh",
-//         backgroundColor: "#ebf3fb",
-//         fontFamily: "'Poppins', sans-serif",
-//       }}
-//     >
-//       <Navbar />
-
-//       <div style={{ flex: 1, maxWidth: "900px", margin: "60px auto", textAlign: "center" }}>
-//         <h2 style={{ fontWeight: "700", fontSize: "26px", color: "#22335b", marginBottom: "6px" }}>
-//           Find Your Perfect Flight
-//         </h2>
-//         <p style={{ color: "#4f596a", marginBottom: "40px" }}>
-//           Search and compare the best flight deals from thousands of airlines worldwide.
-//         </p>
-
-//         <div
-//           style={{
-//             background: "white",
-//             padding: "18px 24px",
-//             borderRadius: "8px",
-//             boxShadow: "0 8px 24px rgb(0 0 0 / 0.05)",
-//             display: "flex",
-//             gap: "16px",
-//             alignItems: "center",
-//             justifyContent: "center",
-//             flexWrap: "wrap",
-//           }}
-//         >
-//           {/* Input Fields */}
-//           <div style={{ flex: "1 1 150px", textAlign: "left" }}>
-//             <label htmlFor="from" style={{ fontSize: "12px", fontWeight: "600", color: "#4f596a" }}>
-//               From & To
-//             </label>
-//             <br />
-//             <input
-//               id="from"
-//               type="text"
-//               placeholder="From"
-//               value={from}
-//               onChange={(e) => setFrom(e.target.value)}
-//               style={{
-//                 width: "90px",
-//                 height: "34px",
-//                 borderRadius: "6px",
-//                 border: "1px solid #ddd",
-//                 paddingLeft: "8px",
-//                 marginRight: "6px",
-//               }}
-//             />
-//             <span style={{ color: "#888" }}>→</span>
-//             <input
-//               id="to"
-//               type="text"
-//               placeholder="To"
-//               value={to}
-//               onChange={(e) => setTo(e.target.value)}
-//               style={{
-//                 width: "90px",
-//                 height: "34px",
-//                 borderRadius: "6px",
-//                 border: "1px solid #ddd",
-//                 paddingLeft: "8px",
-//                 marginLeft: "6px",
-//               }}
-//             />
-//           </div>
-
-//           <div style={{ flex: "1 1 150px", textAlign: "left" }}>
-//             <label htmlFor="depart" style={{ fontSize: "12px", fontWeight: "600", color: "#4f596a" }}>Depart</label>
-//             <br />
-//             <input
-//               id="depart"
-//               type="date"
-//               value={depart}
-//               onChange={(e) => setDepart(e.target.value)}
-//               style={{
-//                 width: "140px",
-//                 height: "34px",
-//                 borderRadius: "6px",
-//                 border: "1px solid #ddd",
-//                 paddingLeft: "8px",
-//               }}
-//             />
-//           </div>
-
-//           <div style={{ flex: "1 1 150px", textAlign: "left" }}>
-//             <label htmlFor="return" style={{ fontSize: "12px", fontWeight: "600", color: "#4f596a" }}>Return</label>
-//             <br />
-//             <input
-//               id="return"
-//               type="date"
-//               value={returnDate}
-//               onChange={(e) => setReturnDate(e.target.value)}
-//               style={{
-//                 width: "140px",
-//                 height: "34px",
-//                 borderRadius: "6px",
-//                 border: "1px solid #ddd",
-//                 paddingLeft: "8px",
-//               }}
-//             />
-//           </div>
-
-//           <button
-//             onClick={handleSearch}
-//             style={{
-//               backgroundColor: "#0b1526",
-//               color: "white",
-//               border: "none",
-//               borderRadius: "8px",
-//               height: "34px",
-//               padding: "0 22px",
-//               cursor: "pointer",
-//               fontWeight: "600",
-//               marginTop: "20px",
-//             }}
-//           >
-//             Search
-//           </button>
-//         </div>
-
-//         {!flightsFound && (
-//           <div style={{ marginTop: "70px", color: "#7a8497", fontWeight: "600" }}>
-//             <svg
-//               width="40"
-//               height="40"
-//               fill="none"
-//               stroke="#7a8497"
-//               strokeWidth="1.5"
-//               strokeLinecap="round"
-//               strokeLinejoin="round"
-//               viewBox="0 0 24 24"
-//               style={{ marginBottom: "10px" }}
-//             >
-//               <path d="M2.5 19h19M6 15l7-7 5 5-7 7-5-5z" />
-//             </svg>
-//             <div>No flights found</div>
-//             <small>Try adjusting your search criteria.</small>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Sticky Footer */}
-//       <footer
-//         style={{
-//           background: "white",
-//           borderTop: "1px solid #eaeaea",
-//           padding: "8px 24px",
-//           display: "flex",
-//           justifyContent: "space-between",
-//           alignItems: "center",
-//           color: "#999",
-//           fontSize: "11px",
-//         }}
-//       >
-//         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-//           <div
-//             style={{
-//               backgroundColor: "#0b1526",
-//               color: "white",
-//               borderRadius: "6px",
-//               padding: "4px 6px",
-//               fontWeight: "600",
-//               fontSize: "12px",
-//             }}
-//           >
-//             ✈️
-//           </div>
-//           PocketYatra
-//           <span style={{ fontWeight: "400", color: "#aaa", marginLeft: "6px" }}>
-//             Your smart travel companion
-//           </span>
-//         </div>
-//         <div style={{ textAlign: "right" }}>
-//           Crafted with <span style={{ color: "red" }}>❤️</span> for travelers worldwide
-//           <br />
-//           Powered by AI · Real-time data · Smart recommendations
-//         </div>
-//       </footer>
-//     </div>
-//   );
-// }
+    const [flightData, setFlightData] = useState(null); // Array of flight objects
+    const [searchParams, setSearchParams] = useState({}); // Parameters used for the search
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [hasSearched, setHasSearched] = useState(false);
 
 
+    // === Form Submission Handler ===
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError(null);
+        setFlightData(null); // Clear previous results
 
+        // Basic validation: Only need origin, destination, and departure date
+        if (!from || !to || !depart) {
+            setError('Please provide origin (IATA), destination (IATA), and departure date.');
+            return;
+        }
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Layout from "../components/Layout";
-import InputField from "../components/InputField";
+        setLoading(true);
+        
+        // Construct parameters for a ONE-WAY trip
+        const currentParams = {
+            from: from.toUpperCase(),
+            to: to.toUpperCase(),
+            depart,
+            // returnDate is intentionally omitted for one-way search
+        };
+        setSearchParams(currentParams);
+        
+        try {
+            // Call the backend API endpoint
+            const response = await axios.post('/api/flights/search', currentParams);
+            
+            setFlightData(response.data.data);
 
-export default function FlightSearch() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
-    from: "",
-    to: "",
-    depart: "",
-    returnDate: "",
-  });
+        } catch (err) {
+            console.error('Flight Search Failed:', err);
+            setError(err.response?.data?.message || 'Failed to fetch flight data. Check backend logs.');
+            setFlightData([]); // Set to empty array to show "No flights found"
+        } finally {
+            setLoading(false);
+            setHasSearched(true);
+        }
+    };
 
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSearch = async (e) => {
-    e.preventDefault();
-
-    if (!form.from || !form.to || !form.depart) {
-      alert("Please fill in all required fields.");
-      return;
-    }
-
-    // Navigate to results page with search parameters
-    const searchParams = new URLSearchParams({
-      from: form.from,
-      to: form.to,
-      depart: form.depart,
-      ...(form.returnDate && { returnDate: form.returnDate })
-    });
-    
-    navigate(`/flights/results?${searchParams.toString()}`);
-  };
-
-  return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-8">
-            {/* Header */}
-            <div className="text-center bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-6 shadow-lg">
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-              </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                Search Flights
-              </h1>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                Find the best flights for your next adventure. Compare prices and book with confidence.
-              </p>
-            </div>
-
-            {/* Flight Search Form */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
-              <form onSubmit={handleSearch} className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-700 flex items-center">
-                      <svg className="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      From
-                    </label>
-                    <input
-                      name="from"
-                      value={form.from}
-                      onChange={handleChange}
-                      placeholder="e.g., Delhi"
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-700 flex items-center">
-                      <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      To
-                    </label>
-                    <input
-                      name="to"
-                      value={form.to}
-                      onChange={handleChange}
-                      placeholder="e.g., Mumbai"
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                    />
-                  </div>
+    // === Result Display Component (Inline) ===
+    const renderFlightResults = () => {
+        if (loading) {
+            return (
+                <div className="text-center p-8 bg-white rounded-xl shadow-lg mt-8">
+                    <svg className="animate-spin h-8 w-8 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p className="mt-4 text-lg text-gray-700">Searching for the best one-way fares...</p>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-700 flex items-center">
-                      <svg className="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      Departure Date
-                    </label>
-                    <input
-                      type="date"
-                      name="depart"
-                      value={form.depart}
-                      onChange={handleChange}
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-700 flex items-center">
-                      <svg className="w-4 h-4 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      Return Date (optional)
-                    </label>
-                    <input
-                      type="date"
-                      name="returnDate"
-                      value={form.returnDate}
-                      onChange={handleChange}
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                    />
-                  </div>
+            );
+        }
+        
+        if (error) {
+            return (
+                <div className="text-center p-8 bg-red-50 rounded-xl shadow-lg mt-8 border border-red-200">
+                    <p className="text-xl font-semibold text-red-700">Search Error</p>
+                    <p className="text-gray-600 mt-2">{error}</p>
                 </div>
+            );
+        }
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center ${
-                    loading ? "opacity-70 cursor-not-allowed" : ""
-                  }`}
-                >
-                  {loading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Searching flights...
+        if (hasSearched && (!flightData || flightData.length === 0)) {
+             return (
+                 <div className="text-center p-8 bg-white rounded-xl shadow-lg mt-8 border border-gray-200">
+                     <p className="text-xl font-semibold text-gray-700">🚫 No flights found.</p>
+                     <p className="text-gray-500 mt-2">Try adjusting your dates or airport codes (e.g., DEL, BOM).</p>
+                 </div>
+             );
+        }
+
+        if (flightData && flightData.length > 0) {
+            // Simplified trip summary for one-way
+            const tripSummary = `${searchParams.from} to ${searchParams.to} (One Way)`;
+
+            return (
+                <div className="max-w-5xl mx-auto mt-8">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">
+                        Showing {flightData.length} Flight Options for {tripSummary}
+                    </h2>
+                    
+                    <div className="space-y-5">
+                        {flightData.map((flight) => (
+                            <div 
+                                key={flight.id} 
+                                className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 border border-gray-100"
+                            >
+                                {/* 1. Times, Duration, and Stops */}
+                                <div className="w-full md:w-1/3 flex items-center space-x-4 mb-4 md:mb-0">
+                                    <div className="flex flex-col">
+                                        <span className="text-3xl font-extrabold text-indigo-700">{flight.departure_time}</span>
+                                        <span className="text-sm text-gray-500">Depart ({searchParams.from})</span>
+                                    </div>
+                                    
+                                    <div className="flex flex-col items-center flex-grow">
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                            flight.details.includes('Non-stop') ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                        }`}>
+                                            {flight.details}
+                                        </span>
+                                        <span className="text-sm text-gray-400 mt-1">{flight.duration}</span>
+                                    </div>
+                                    
+                                    <div className="flex flex-col text-right">
+                                        <span className="text-3xl font-extrabold text-indigo-700">{flight.arrival_time}</span>
+                                        <span className="text-sm text-gray-500">Arrive ({searchParams.to})</span>
+                                    </div>
+                                </div>
+
+                                {/* 2. Airline Details */}
+                                <div className="w-full md:w-1/3 flex flex-col justify-center items-start md:items-center mb-4 md:mb-0">
+                                    <span className="text-lg font-semibold text-gray-800">{flight.airline}</span>
+                                    <span className="text-sm text-gray-500">Economy Class</span>
+                                </div>
+
+                                {/* 3. Price and Action */}
+                                <div className="w-full md:w-1/4 flex flex-col items-start md:items-end space-y-2 pt-4 md:pt-0 border-t md:border-t-0 md:border-l md:pl-6">
+                                    <span className="text-4xl font-bold text-green-600">
+                                        ₹{flight.price_in_inr.toLocaleString()} 
+                                    </span>
+                                    <span className="text-sm text-gray-500">Total Price</span>
+                                    <button className="w-full md:w-auto px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition duration-300">
+                                        View Deal
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                      Search Flights
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
+                </div>
+            );
+        }
+        
+        return null; // Initial state before search
+    };
 
-            {/* Features Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 text-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Best Prices</h3>
-                <p className="text-gray-600 text-sm">Compare prices from multiple airlines to find the best deals</p>
-              </div>
-              
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 text-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Real-time Updates</h3>
-                <p className="text-gray-600 text-sm">Get instant updates on flight schedules and price changes</p>
-              </div>
-              
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 text-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Easy Booking</h3>
-                <p className="text-gray-600 text-sm">Book your flights with just a few clicks and secure payment</p>
-              </div>
+    // === Main Component Render ===
+    return (
+        <div className="min-h-screen bg-gray-100 p-4 sm:p-8 font-sans">
+            <div className="container mx-auto max-w-6xl">
+                
+                {/* Search Form */}
+                <form onSubmit={handleSubmit} className="p-6 bg-white rounded-xl shadow-2xl space-y-4 mb-10">
+                    <h2 className="text-3xl font-extrabold text-gray-900 mb-4">✈️ One-Way Flight Finder</h2>
+                    
+                    {/* Input Fields (3 columns: From, To, Depart) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        
+                        {/* Origin (IATA Code) */}
+                        <div>
+                            <label htmlFor="from" className="block text-sm font-medium text-gray-700">Origin (IATA)</label>
+                            <input
+                                id="from"
+                                type="text"
+                                value={from}
+                                onChange={(e) => setFrom(e.target.value)}
+                                placeholder="e.g., DEL"
+                                maxLength="3"
+                                required
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm uppercase"
+                            />
+                        </div>
+
+                        {/* Destination (IATA Code) */}
+                        <div>
+                            <label htmlFor="to" className="block text-sm font-medium text-gray-700">Destination (IATA)</label>
+                            <input
+                                id="to"
+                                type="text"
+                                value={to}
+                                onChange={(e) => setTo(e.target.value)}
+                                placeholder="e.g., BOM"
+                                maxLength="3"
+                                required
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm uppercase"
+                            />
+                        </div>
+
+                        {/* Departure Date */}
+                        <div>
+                            <label htmlFor="depart" className="block text-sm font-medium text-gray-700">Departure Date</label>
+                            <input
+                                id="depart"
+                                type="date"
+                                value={depart}
+                                onChange={(e) => setDepart(e.target.value)}
+                                required
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            />
+                        </div>
+
+                    </div>
+
+                    {/* Search Button */}
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full md:w-auto px-8 py-3 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition duration-150 ease-in-out"
+                        >
+                            {loading ? 'Searching...' : 'Search One-Way Flights'}
+                        </button>
+                    </div>
+                </form>
+
+                {/* Search Results Area */}
+                {renderFlightResults()}
+
+                {!hasSearched && (
+                    <div className="text-center p-12 bg-white rounded-xl shadow-lg">
+                        <p className="text-xl text-gray-500">
+                            Enter your travel details above to see the one-way flight results here. 
+                        </p>
+                    </div>
+                )}
             </div>
-          </div>
         </div>
-      </div>
-    </Layout>
-  );
-}
+    );
+};
+
+export default FlightSearch;

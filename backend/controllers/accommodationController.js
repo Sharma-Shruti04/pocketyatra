@@ -66,16 +66,26 @@ export const searchHotels = async (req, res) => {
     };
 
     const response = await axios.get(serpApiUrl, { params });
+    console.log(response.data);
+    
+    console.log('Serp API Response:', JSON.stringify(response.data, null, 2));
     
     let hotels = [];
     
+    console.log(response.data.properties[0])
+
     if (response.data && response.data.properties) {
       hotels = response.data.properties.slice(0, 8).map(property => ({
         name: property.name || "Hotel",
         location: property.address || location,
         rating: property.overall_rating ? property.overall_rating.toString() : "N/A",
         rooms: property.rooms_available ? property.rooms_available.toString() : "N/A",
-        pricePerNight: property.price ? parseInt(property.price.replace(/[^\d]/g, '')) : 0,
+        pricePerNight: property.total_rate.lowest ,
+        // ? 
+        //   (typeof property.price === 'object' && property.price.extracted_lowest ? 
+        //     property.price.extracted_lowest * 80 : // Convert USD to INR (approximate)
+        //     parseInt(property.price.toString().replace(/[^\d]/g, '')) * 80) : 
+        //   0,
         amenities: property.amenities || ["WiFi", "Parking"],
         image: property.images && property.images[0] ? property.images[0].thumbnail : "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400",
         description: property.description || "Comfortable accommodation",
@@ -103,7 +113,7 @@ export const searchHotels = async (req, res) => {
 
     res.json({ success: true, hotels });
   } catch (err) {
-    console.error("Error in searchHotels:", err);
+    console.error("Error in searchHotels:", err.message);
     
     // Return dummy hotels on API error
     const fallbackHotels = [

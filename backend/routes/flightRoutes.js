@@ -8,4 +8,3 @@ const router = express.Router();
 router.post("/", searchFlights);
 
 export default router;
-

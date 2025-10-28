@@ -41,6 +41,7 @@ export default function AccommodationSearch() {
       });
 
       const data = await res.json();
+      console.log(data)
 
       if (res.ok) {
         setHotels(data.hotels || []);
@@ -228,14 +229,11 @@ export default function AccommodationSearch() {
 
                         <div className="mt-4 lg:mt-0 lg:text-right">
                           <div className="text-2xl font-bold text-purple-600 mb-2">
-                      ₹{hotel.pricePerNight}/night
+                      ₹{hotel.pricePerNight || 'N/A'}/night
                           </div>
-                          <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                            <svg className="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                            </svg>
-                      Book Now
-                    </button>
+                          <div className="text-sm text-gray-500">
+                            {hotel.rooms || "N/A"} rooms available
+                          </div>
                         </div>
                   </div>
                 </div>
