@@ -1,9 +1,8 @@
 // src/api/index.js
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "http://localhost:5000/api", // your backend API base URL
-});
+const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API = axios.create({ baseURL });
 
 // Attach token to every request if exists
 API.interceptors.request.use((config) => {

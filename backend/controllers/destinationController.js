@@ -1,5 +1,5 @@
-import axios from "axios";
 import dotenv from "dotenv";
+import { getJson } from "serpapi";
 dotenv.config();
 
 export const findDestinations = async (req, res) => {
@@ -11,7 +11,7 @@ export const findDestinations = async (req, res) => {
     }
 
     // If no API key, return dummy destinations
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.SERP_API_KEY) {
       const dummyDestinations = [
         { name: "Manali", state: "Himachal Pradesh", averageBudget: 8000, bestSeason: "winter", type: "adventure" },
         { name: "Goa", state: "Goa", averageBudget: 15000, bestSeason: "summer", type: "relaxation" },
@@ -29,26 +29,76 @@ export const findDestinations = async (req, res) => {
       return res.json({ success: true, destinations: results.length > 0 ? results : [{ note: "No destinations match your criteria" }] });
     }
 
-    // Call external API (like flight API)
-    const prompt = `List 3 destinations for a ${travelType} trip in ${season} season with budget under ${budget} INR. 
-      Include name, state, averageBudget, bestSeason, type in JSON array format.`;
+    // Use SerpAPI client library to search for travel destinations
+    const query = `best ${travelType} destinations in India during ${season} season under ${budget} budget`;
+    
+    // Using the SerpAPI client library with getJson
+    const searchData = await getJson({
+      engine: "google",
+      q: query,
+      location: "India",
+      google_domain: "google.co.in",
+      gl: "in",
+      hl: "en",
+      api_key: process.env.SERP_API_KEY
+    });
 
-    const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        contents: [{ parts: [{ text: prompt }] }],
-      }
-    );
-
-    const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
-    let parsedData;
-    try {
-      parsedData = JSON.parse(text);
-    } catch {
-      parsedData = [{ note: "Unable to parse Gemini output", raw: text }];
+    // Get AI overview if available
+    const aiOverview = searchData.ai_overview || {};
+    const aiSummary = aiOverview.text || "";
+    const aiChips = aiOverview.chips || [];
+    
+    // Process organic results as backup
+    const searchResults = searchData.organic_results || [];
+    
+    // Create destinations from AI overview and organic results
+    let destinations = [];
+    
+    // If AI overview is available, use it as the primary source
+    if (aiSummary) {
+      // Create a main destination from AI summary
+      destinations.push({
+        name: `${travelType.charAt(0).toUpperCase() + travelType.slice(1)} Destinations in ${season}`,
+        state: "Various States in India",
+        averageBudget: parseInt(budget),
+        bestSeason: season,
+        type: travelType,
+        description: aiSummary,
+        isAiOverview: true,
+        aiChips: aiChips.map(chip => chip.text)
+      });
+    }
+    
+    // Add organic results as additional destinations
+    if (searchResults.length > 0) {
+      const organicDestinations = searchResults.slice(0, 5).map((result) => {
+        // Extract location name from title
+        const name = result.title.split(' - ')[0].split(' | ')[0];
+        
+        // Default values
+        const defaultState = "Various States";
+        const defaultBudget = parseInt(budget) * 0.8; // 80% of max budget as estimate
+        
+        return {
+          name: name,
+          state: defaultState,
+          averageBudget: defaultBudget,
+          bestSeason: season,
+          type: travelType,
+          description: result.snippet || "A perfect destination for your trip",
+          link: result.link || ""
+        };
+      });
+      
+      destinations = [...destinations, ...organicDestinations];
     }
 
-    res.json({ success: true, destinations: parsedData });
+    // If no results found
+    if (destinations.length === 0) {
+      destinations.push({ note: "No destinations match your criteria" });
+    }
+
+    res.json({ success: true, destinations: destinations });
   } catch (err) {
     console.error("Error in findDestinations:", err);
     res.status(500).json({ success: false, message: "Server error while finding destinations.", error: err.message });

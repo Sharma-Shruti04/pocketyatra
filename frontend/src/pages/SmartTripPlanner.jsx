@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Layout from "../components/Layout";
 import InputField from "../components/InputField";
+import API from "../api/axiosConfig";
 
 export default function SmartTripPlanner() {
   const [form, setForm] = useState({
@@ -29,26 +30,11 @@ export default function SmartTripPlanner() {
     setPlan(null);
 
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/plan-trip", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setPlan(data);
-      } else {
-        alert(data.message || "Failed to generate trip plan");
-      }
+      const { data } = await API.post("/plan-trip", form);
+      setPlan(data.plan || data);
     } catch (err) {
       console.error("Trip planning error:", err);
-      alert("Something went wrong!");
+      alert(err.response?.data?.message || "Something went wrong!");
     } finally {
       setLoading(false);
     }
@@ -164,12 +150,12 @@ export default function SmartTripPlanner() {
                       Generate Trip Plan
                     </>
                   )}
-          </button>
-        </form>
+                </button>
+              </form>
             </div>
 
-        {/* ✈️ Trip Plan Results */}
-        {plan && (
+            {/* ✈️ Trip Plan Results */}
+            {plan && (
               <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
                 <div className="flex items-center mb-6">
                   <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center mr-4">
@@ -178,8 +164,8 @@ export default function SmartTripPlanner() {
                     </svg>
                   </div>
                   <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-              Your Smart Trip Plan
-            </h2>
+                    Your Smart Trip Plan
+                  </h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -193,7 +179,7 @@ export default function SmartTripPlanner() {
                     </div>
                     <p className="text-gray-600">{form.destination}</p>
                   </div>
-                  
+
                   <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-4 border border-green-200">
                     <div className="flex items-center mb-2">
                       <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,11 +189,11 @@ export default function SmartTripPlanner() {
                     </div>
                     <p className="text-gray-600">{form.startDate} → {form.endDate}</p>
                   </div>
-                  
+
                   <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl p-4 border border-orange-200">
                     <div className="flex items-center mb-2">
                       <svg className="w-5 h-5 text-orange-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1" />
                       </svg>
                       <span className="font-semibold text-gray-800">Budget</span>
                     </div>
@@ -215,8 +201,50 @@ export default function SmartTripPlanner() {
                   </div>
                 </div>
 
-            {/* If API returns AI-based plan details */}
-            {plan.itinerary ? (
+                {/* If API returns AI-based plan details */}
+                {plan.text_blocks && plan.text_blocks.length > 0 ? (
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg className="w-6 h-6 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        Recommended Plan
+                      </h3>
+                      <ul className="space-y-2">
+                        {plan.text_blocks.map((t, idx) => (
+                          <li key={idx} className="flex items-start">
+                            <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                              {idx + 1}
+                            </div>
+                            <span className="text-gray-700 whitespace-pre-wrap">{t}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    {Array.isArray(plan.places) && plan.places.length > 0 && (
+                      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200">
+                        <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                          <svg className="w-6 h-6 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          Top Places to Visit
+                        </h3>
+                        <ul className="space-y-2">
+                          {plan.places.map((p, i) => (
+                            <li key={i} className="flex items-start">
+                              <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                                {i + 1}
+                              </div>
+                              <span className="text-gray-700">{p}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ) : plan.itinerary ? (
                   <div className="space-y-6">
                     <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
                       <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -226,18 +254,40 @@ export default function SmartTripPlanner() {
                         Recommended Itinerary
                       </h3>
                       <ul className="space-y-2">
-                  {plan.itinerary.map((item, index) => (
+                        {plan.itinerary.map((item, index) => (
                           <li key={index} className="flex items-start">
                             <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
                               {index + 1}
                             </div>
                             <span className="text-gray-700">{item}</span>
                           </li>
-                  ))}
-                </ul>
+                        ))}
+                      </ul>
                     </div>
 
-                {plan.flights && (
+                    {Array.isArray(plan.places) && plan.places.length > 0 && (
+                      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200">
+                        <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                          <svg className="w-6 h-6 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          Top Places to Visit
+                        </h3>
+                        <ul className="space-y-2">
+                          {plan.places.map((p, i) => (
+                            <li key={i} className="flex items-start">
+                              <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                                {i + 1}
+                              </div>
+                              <span className="text-gray-700">{p}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {plan.flights && (
                       <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
                         <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                           <svg className="w-6 h-6 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,19 +296,19 @@ export default function SmartTripPlanner() {
                           Flight Suggestions
                         </h3>
                         <ul className="space-y-2">
-                      {plan.flights.map((f, i) => (
+                          {plan.flights.map((f, i) => (
                             <li key={i} className="flex items-start">
                               <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
                                 ✈
                               </div>
                               <span className="text-gray-700">{f}</span>
                             </li>
-                      ))}
-                    </ul>
+                          ))}
+                        </ul>
                       </div>
-                )}
+                    )}
 
-                {plan.hotels && (
+                    {plan.hotels && (
                       <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
                         <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                           <svg className="w-6 h-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,15 +317,15 @@ export default function SmartTripPlanner() {
                           Hotel Suggestions
                         </h3>
                         <ul className="space-y-2">
-                      {plan.hotels.map((h, i) => (
+                          {plan.hotels.map((h, i) => (
                             <li key={i} className="flex items-start">
                               <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
                                 🏨
                               </div>
                               <span className="text-gray-700">{h}</span>
                             </li>
-                      ))}
-                    </ul>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </div>
