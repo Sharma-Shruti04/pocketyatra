@@ -195,11 +195,12 @@ Make sure to provide actual, real-world options (airlines, specific hotels, attr
       let responseText = "";
 
       if (apiKey.startsWith("sk-or-")) {
-        console.log("Calling OpenRouter with Gemini 2.5 Flash Free...");
+        const model = process.env.AI_MODEL || "google/gemma-2-9b-it:free";
+        console.log(`Calling OpenRouter with model: ${model}...`);
         const openRouterResponse = await axios.post(
           "https://openrouter.ai/api/v1/chat/completions",
           {
-            model: "google/gemini-2.5-flash:free",
+            model: model,
             messages: [
               {
                 role: "user",

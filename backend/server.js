@@ -65,7 +65,7 @@ app.get("/api/test-gemini", async (req, res) => {
 
     if (apiKey.startsWith("sk-or-")) {
       serviceUsed = "OpenRouter";
-      modelUsed = "google/gemini-2.5-flash:free";
+      modelUsed = process.env.AI_MODEL || "google/gemma-2-9b-it:free";
       const openRouterResponse = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
         {
