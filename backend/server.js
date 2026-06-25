@@ -45,8 +45,39 @@ app.use("/api/destinations", destinationRoutes);
 app.use("/api", accommodationRouter); // provides POST /api/search-hotels
 app.use("/api", tripPlannerRouter);   // provides POST /api/plan-trip
 app.use("/api", profileRouter);       // provides GET/PUT /api/profile
+import { GoogleGenAI } from "@google/genai";
+
 // Health check
 app.get("/", (req, res) => res.send("✅ PocketYatra Backend Running"));
+
+// Test Gemini API connection in production
+app.get("/api/test-gemini", async (req, res) => {
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(400).json({ success: false, message: "GEMINI_API_KEY environment variable is missing on this server." });
+    }
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: 'Hello, respond with exactly "Gemini is connected successfully!"',
+    });
+    return res.json({
+      success: true,
+      message: "Gemini connection test successful!",
+      apiKeyExists: true,
+      modelUsed: 'gemini-1.5-flash',
+      geminiResponse: response.text ? response.text.trim() : null
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Gemini connection test failed.",
+      error: error.message,
+      errorDetails: error
+    });
+  }
+});
 
 // Centralized error handler
 app.use(errorHandler);

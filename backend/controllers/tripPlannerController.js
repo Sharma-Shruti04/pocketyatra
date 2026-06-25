@@ -193,7 +193,7 @@ If the budget is sufficient for a decent trip, you MUST return a JSON object wit
 Make sure to provide actual, real-world options (airlines, specific hotels, attractions) that exist and fit well within the ₹${budget} budget. Do not include markdown code block syntax (like \`\`\`json) outside the JSON structure. Just return the JSON object directly.`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
