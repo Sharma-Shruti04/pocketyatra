@@ -46,6 +46,7 @@ app.use("/api", accommodationRouter); // provides POST /api/search-hotels
 app.use("/api", tripPlannerRouter);   // provides POST /api/plan-trip
 app.use("/api", profileRouter);       // provides GET/PUT /api/profile
 import { GoogleGenAI } from "@google/genai";
+import axios from "axios";
 
 // Health check
 app.get("/", (req, res) => res.send("✅ PocketYatra Backend Running"));
@@ -53,28 +54,64 @@ app.get("/", (req, res) => res.send("✅ PocketYatra Backend Running"));
 // Test Gemini API connection in production
 app.get("/api/test-gemini", async (req, res) => {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY || process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(400).json({ success: false, message: "GEMINI_API_KEY environment variable is missing on this server." });
+      return res.status(400).json({ success: false, message: "No API key (GEMINI_API_KEY or OPENROUTER_API_KEY) found on this server." });
     }
-    const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
-      contents: 'Hello, respond with exactly "Gemini is connected successfully!"',
-    });
+
+    let responseText = "";
+    let serviceUsed = "";
+    let modelUsed = "";
+
+    if (apiKey.startsWith("sk-or-")) {
+      serviceUsed = "OpenRouter";
+      modelUsed = "google/gemini-2.5-flash:free";
+      const openRouterResponse = await axios.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          model: modelUsed,
+          messages: [
+            {
+              role: "user",
+              content: 'Hello, respond with exactly "Gemini is connected successfully via OpenRouter!"'
+            }
+          ]
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`,
+            "HTTP-Referer": "http://localhost:5000",
+            "X-Title": "PocketYatra"
+          }
+        }
+      );
+      responseText = openRouterResponse.data.choices[0].message.content;
+    } else {
+      serviceUsed = "Google Gen AI SDK";
+      modelUsed = "gemini-2.0-flash";
+      const ai = new GoogleGenAI({ apiKey });
+      const response = await ai.models.generateContent({
+        model: modelUsed,
+        contents: 'Hello, respond with exactly "Gemini is connected successfully!"',
+      });
+      responseText = response.text;
+    }
+
     return res.json({
       success: true,
-      message: "Gemini connection test successful!",
+      message: `Gemini connection test successful via ${serviceUsed}!`,
       apiKeyExists: true,
-      modelUsed: 'gemini-1.5-flash',
-      geminiResponse: response.text ? response.text.trim() : null
+      serviceUsed,
+      modelUsed,
+      geminiResponse: responseText ? responseText.trim() : null
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: "Gemini connection test failed.",
       error: error.message,
-      errorDetails: error
+      errorDetails: error.response?.data || error
     });
   }
 });

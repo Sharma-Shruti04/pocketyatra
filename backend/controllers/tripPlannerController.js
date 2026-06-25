@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
+import axios from "axios";
 dotenv.config();
 
 // Define suggestions for popular destinations as fallback
@@ -130,16 +131,15 @@ export const planTrip = async (req, res) => {
     const end = new Date(endDate);
     const tripDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
 
-    // Fallback if no Gemini API Key is configured
-    if (!process.env.GEMINI_API_KEY) {
-      console.warn("GEMINI_API_KEY is not set. Falling back to dummy generator.");
+    // Fallback if no API Key is configured
+    const apiKey = process.env.OPENROUTER_API_KEY || process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.warn("API Key is not set. Falling back to dummy generator.");
       const fallbackPlan = generateFallbackTripPlan(destination, startDate, endDate, budget);
       return res.json({ success: true, plan: fallbackPlan });
     }
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      
       const prompt = `You are an expert travel planner. Your task is to design a realistic trip plan starting from the source city: ${source} to the destination: ${destination}.
 Dates: from ${startDate} to ${endDate} (${tripDays} days).
 Total Budget: ₹${budget} INR.
@@ -192,19 +192,52 @@ If the budget is sufficient for a decent trip, you MUST return a JSON object wit
 
 Make sure to provide actual, real-world options (airlines, specific hotels, attractions) that exist and fit well within the ₹${budget} budget. Do not include markdown code block syntax (like \`\`\`json) outside the JSON structure. Just return the JSON object directly.`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-        }
-      });
+      let responseText = "";
 
-      if (!response.text) {
-        throw new Error("Empty response from Gemini API");
+      if (apiKey.startsWith("sk-or-")) {
+        console.log("Calling OpenRouter with Gemini 2.5 Flash Free...");
+        const openRouterResponse = await axios.post(
+          "https://openrouter.ai/api/v1/chat/completions",
+          {
+            model: "google/gemini-2.5-flash:free",
+            messages: [
+              {
+                role: "user",
+                content: prompt
+              }
+            ],
+            response_format: {
+              type: "json_object"
+            }
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${apiKey}`,
+              "HTTP-Referer": "http://localhost:5000",
+              "X-Title": "PocketYatra"
+            }
+          }
+        );
+        responseText = openRouterResponse.data.choices[0].message.content;
+      } else {
+        console.log("Calling Google Gen AI SDK...");
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.0-flash',
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+          }
+        });
+        responseText = response.text;
       }
 
-      const parsedPlan = JSON.parse(response.text.trim());
+      if (!responseText) {
+        throw new Error("Empty response from AI service");
+      }
+
+      const parsedPlan = JSON.parse(responseText.trim());
       
       if (parsedPlan.insufficientBudget) {
         return res.json({ 
