@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import logo from "../assets/logo.jpg";
+import logo from "../assets/logo.png";
 
 export default function Landing() {
   const quotes = [
@@ -46,24 +46,24 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-300">
       {/* Navigation Header */}
-      <nav className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-white/20">
+      <nav className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-lg border-b border-white/20 dark:border-slate-800/50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
               <img src={logo} alt="PocketYatra Logo" className="h-12 w-12 rounded-full shadow-md" />
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
                   PocketYatra
                 </h1>
-                <p className="text-xs text-gray-500">Your Travel Companion</p>
+                <p className="text-xs text-gray-500 dark:text-gray-450">Your Travel Companion</p>
               </div>
             </div>
             <div className="flex space-x-4">
               <Link
                 to="/login"
-                className="px-6 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200"
+                className="px-6 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
               >
                 Login
               </Link>
@@ -94,10 +94,10 @@ export default function Landing() {
                 Your Journey
               </span>
               <br />
-              <span className="text-gray-800">Starts Here</span>
+              <span className="text-gray-800 dark:text-gray-100">Starts Here</span>
             </h1>
             
-            <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
               Discover the world with PocketYatra - your intelligent travel companion that makes 
               every trip seamless, affordable, and unforgettable. From flights to accommodations, 
               we've got your entire journey covered.
@@ -112,7 +112,7 @@ export default function Landing() {
               </Link>
               <Link
                 to="/login"
-                className="px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-semibold rounded-full hover:border-blue-500 hover:text-blue-600 transition-all duration-200"
+                className="px-8 py-4 border-2 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-300 text-lg font-semibold rounded-full hover:border-blue-500 hover:text-blue-600 transition-all duration-200"
               >
                 Already a Member?
               </Link>
@@ -122,11 +122,11 @@ export default function Landing() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white/50">
+      <section className="py-20 bg-white/50 dark:bg-slate-900/10 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">Why Choose PocketYatra?</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-4">Why Choose PocketYatra?</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-450 max-w-2xl mx-auto">
               We combine cutting-edge technology with personalized service to make your travel dreams come true.
             </p>
           </div>
@@ -135,11 +135,11 @@ export default function Landing() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-white/20"
+                className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-white/20 dark:border-slate-800/50"
               >
                 <div className="text-4xl mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">{feature.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -175,13 +175,13 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-indigo-50 to-purple-50">
+      <section className="py-20 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-950 dark:to-slate-950 transition-colors duration-300">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-12 shadow-2xl border border-white/20">
-            <h2 className="text-4xl font-bold text-gray-800 mb-6">
+          <div className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl p-12 shadow-2xl border border-white/20 dark:border-slate-800/50">
+            <h2 className="text-4xl font-bold text-gray-800 dark:text-gray-150 mb-6">
               Ready to Explore the World?
             </h2>
-            <p className="text-xl text-gray-600 mb-8">
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
               Join thousands of travelers who trust PocketYatra for their adventures. 
               Start planning your next journey today!
             </p>
@@ -194,7 +194,7 @@ export default function Landing() {
               </Link>
               <Link
                 to="/login"
-                className="px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-semibold rounded-full hover:border-blue-500 hover:text-blue-600 transition-all duration-200"
+                className="px-8 py-4 border-2 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-300 text-lg font-semibold rounded-full hover:border-blue-500 hover:text-blue-600 transition-all duration-200"
               >
                 Sign In
               </Link>

@@ -1,5 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
+import { getUsdToInrRate } from "../utils/currency.js";
 dotenv.config();
 
 export const searchHotels = async (req, res) => {
@@ -75,24 +76,34 @@ export const searchHotels = async (req, res) => {
     console.log(response.data.properties[0])
 
     if (response.data && response.data.properties) {
-      hotels = response.data.properties.slice(0, 8).map(property => ({
-        name: property.name || "Hotel",
-        location: property.address || location,
-        rating: property.overall_rating ? property.overall_rating.toString() : "N/A",
-        rooms: property.rooms_available ? property.rooms_available.toString() : "N/A",
-        pricePerNight: property.total_rate.lowest ,
-        // ? 
-        //   (typeof property.price === 'object' && property.price.extracted_lowest ? 
-        //     property.price.extracted_lowest * 80 : // Convert USD to INR (approximate)
-        //     parseInt(property.price.toString().replace(/[^\d]/g, '')) * 80) : 
-        //   0,
-        amenities: property.amenities || ["WiFi", "Parking"],
-        image: property.images && property.images[0] ? property.images[0].thumbnail : "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400",
-        description: property.description || "Comfortable accommodation",
-        link: property.link || "#",
-        reviews: property.reviews || 0,
-        hotelClass: property.hotel_class || "Hotel"
-      }));
+      const usdToInrRate = await getUsdToInrRate();
+      hotels = response.data.properties.slice(0, 8).map(property => {
+        let convertedPrice = 0;
+        const lowestRate = property.total_rate?.lowest || property.price || 0;
+        if (typeof lowestRate === 'number') {
+          convertedPrice = Math.round(lowestRate * usdToInrRate);
+        } else if (lowestRate) {
+          const parsed = parseInt(lowestRate.toString().replace(/[^\d]/g, ''), 10);
+          convertedPrice = isNaN(parsed) ? 0 : Math.round(parsed * usdToInrRate);
+        }
+        if (!convertedPrice) {
+          convertedPrice = 3500 + Math.floor(Math.random() * 4000);
+        }
+
+        return {
+          name: property.name || "Hotel",
+          location: property.address || location,
+          rating: property.overall_rating ? property.overall_rating.toString() : "N/A",
+          rooms: property.rooms_available ? property.rooms_available.toString() : "N/A",
+          pricePerNight: convertedPrice,
+          amenities: property.amenities || ["WiFi", "Parking"],
+          image: property.images && property.images[0] ? property.images[0].thumbnail : "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400",
+          description: property.description || "Comfortable accommodation",
+          link: property.link || "#",
+          reviews: property.reviews || 0,
+          hotelClass: property.hotel_class || "Hotel"
+        };
+      });
     }
 
     // If no hotels found from Serp API, return dummy data

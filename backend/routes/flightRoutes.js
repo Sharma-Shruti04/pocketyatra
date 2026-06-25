@@ -1,5 +1,5 @@
 import express from "express";
-import { searchFlights } from "../controllers/flightController.js";
+import { searchFlights, getFlightBookingOption } from "../controllers/flightController.js";
 //import { verifyToken } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -9,5 +9,8 @@ router.post("/", searchFlights);
 
 // POST /api/flights/search - New endpoint with token verification
 router.post("/search", searchFlights);
+
+// POST /api/flights/booking - Get specific booking redirect url
+router.post("/booking", getFlightBookingOption);
 
 export default router;

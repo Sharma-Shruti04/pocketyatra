@@ -10,6 +10,7 @@ import DestinationFinder from "./pages/DestinationFinder";
 import AccommodationSearch from "./pages/AccommodationSearch";
 import Profile from "./pages/Profile";
 import Currency from "./pages/Currency";
+import NotFound from "./pages/NotFound";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -88,6 +89,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     //</Router>
   );

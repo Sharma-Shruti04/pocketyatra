@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import InputField from "../components/InputField";
 import { GoogleLogin } from "@react-oauth/google";
 import API from "../api/axiosConfig";
-import logo from "../assets/logo.jpg";
+import logo from "../assets/logo.png";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -55,7 +55,9 @@ export default function Login() {
       navigate("/dashboard");
     } catch (err) {
       console.error("Google login error:", err);
-      alert(err.response?.data?.message || "Google login failed. Try again.");
+      const errMsg = err.response?.data?.message || "Google login failed";
+      const errDetails = err.response?.data?.error ? "\nDetails: " + err.response.data.error : "";
+      alert(errMsg + errDetails);
     }
   };
 
@@ -64,17 +66,17 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-300">
       {/* 🔹 Header Section */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-white/20">
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-lg border-b border-white/20 dark:border-slate-800/50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center py-4">
             <img src={logo} alt="PocketYatra Logo" className="h-12 w-12 rounded-full shadow-md mr-3" />
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
                 PocketYatra
               </h1>
-              <p className="text-xs text-gray-500">Your Travel Companion</p>
+              <p className="text-xs text-gray-500 dark:text-gray-450">Your Travel Companion</p>
             </div>
           </div>
         </div>
@@ -83,7 +85,7 @@ export default function Login() {
       {/* 🔹 Login Form */}
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] py-12">
         <div className="w-full max-w-md">
-          <div className="bg-white/80 backdrop-blur-sm shadow-2xl rounded-3xl p-8 border border-white/20">
+          <div className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-sm shadow-2xl rounded-3xl p-8 border border-white/20 dark:border-slate-800/50 transition-all duration-300">
             {/* Header */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-4 shadow-lg">
@@ -91,10 +93,10 @@ export default function Login() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
               </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent mb-2">
                 Welcome Back
               </h2>
-              <p className="text-gray-600">Sign in to continue your journey</p>
+              <p className="text-gray-600 dark:text-gray-400">Sign in to continue your journey</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-6">
@@ -127,10 +129,10 @@ export default function Login() {
             {/* 🔹 Divider */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t border-gray-300 dark:border-slate-700"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                <span className="px-2 bg-white dark:bg-slate-900 text-gray-500 dark:text-gray-400 rounded-md">Or continue with</span>
               </div>
             </div>
 
@@ -144,9 +146,9 @@ export default function Login() {
 
             {/* 🔹 Signup Redirect */}
             <div className="text-center mt-8">
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Don't have an account?{" "}
-                <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
+                <Link to="/signup" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold transition-colors duration-200">
                   Create one now
                 </Link>
               </p>

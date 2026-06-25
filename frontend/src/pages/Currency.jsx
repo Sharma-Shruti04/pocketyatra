@@ -287,12 +287,12 @@ export default function CurrencyPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 pt-8 pb-0 flex-1 flex flex-col transition-colors duration-300">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 flex flex-col">
           <div className="space-y-10">
             
             {/* Header Section */}
-            <div className="text-center bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+            <div className="text-center bg-white/80 dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-800/50 transition-all duration-300">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mb-6 shadow-lg">
                 <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 1.343-3 3h6c0-1.657-1.343-3-3-3zM12 4v4m0 8v4m-7-8h14" />
@@ -301,16 +301,16 @@ export default function CurrencyPage() {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
                 Currency Converter
               </h1>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
                 Instantly convert between popular currencies with real-time exchange rates.
               </p>
             </div>
 
             {/* Conversion Form */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+            <div className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-800/50 transition-all duration-300">
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">Amount</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Amount</label>
                   <input
                     ref={amountInputRef}
                     type="text"
@@ -319,17 +319,17 @@ export default function CurrencyPage() {
                     onChange={(e) => setAmount(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Enter amount (e.g., 100 or 12.50)"
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    className="w-full border-2 border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white dark:bg-slate-800 dark:text-gray-100 dark:focus:bg-slate-700"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-700">From Currency</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">From Currency</label>
                     <select
                       value={fromCurrency}
                       onChange={(e) => setFromCurrency(e.target.value)}
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                      className="w-full border-2 border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white dark:bg-slate-800 dark:text-gray-100 dark:focus:bg-slate-700"
                     >
                       {["USD", "INR", "EUR", "GBP", "JPY", "AUD", "CAD"].map((cur) => (
                         <option key={cur}>{cur}</option>
@@ -338,11 +338,11 @@ export default function CurrencyPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-700">To Currency</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">To Currency</label>
                     <select
                       value={toCurrency}
                       onChange={(e) => setToCurrency(e.target.value)}
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                      className="w-full border-2 border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white dark:bg-slate-800 dark:text-gray-100 dark:focus:bg-slate-700"
                     >
                       {["USD", "INR", "EUR", "GBP", "JPY", "AUD", "CAD"].map((cur) => (
                         <option key={cur}>{cur}</option>
@@ -377,19 +377,19 @@ export default function CurrencyPage() {
 
             {/* Result Section */}
             {error && (
-              <div className="text-center bg-red-100 text-red-700 py-3 rounded-xl shadow-md">
+              <div className="text-center bg-red-100 dark:bg-red-950/20 text-red-700 dark:text-red-400 border border-red-255 dark:border-red-900/50 py-3 rounded-xl shadow-md">
                 {error}
               </div>
             )}
 
             {converted !== null && !error && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 text-center">
-                <h2 className="text-2xl font-bold text-indigo-700 mb-2">
+              <div className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-800/50 text-center transition-all duration-300">
+                <h2 className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 mb-2">
                   Conversion Result
                 </h2>
-                <p className="text-lg text-gray-700">
+                <p className="text-lg text-gray-750 dark:text-gray-300">
                   {parseAmount(amount)} {fromCurrency} ={" "}
-                  <span className="font-bold text-purple-700 text-3xl">{converted}</span>{" "}
+                  <span className="font-bold text-purple-700 dark:text-purple-400 text-3xl">{converted}</span>{" "}
                   {toCurrency}
                 </p>
               </div>

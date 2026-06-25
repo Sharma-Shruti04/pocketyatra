@@ -83,21 +83,24 @@ export const loginUser = async (req, res) => {
 export const googleLogin = async (req, res) => {
   try {
     console.log("Google login request:", req.body);
+    console.log("process.env.GOOGLE_CLIENT_ID in backend:", process.env.GOOGLE_CLIENT_ID);
 
     const { tokenId, credential } = req.body;
     const googleToken = tokenId || credential;
 
     if (!googleToken) {
+      console.log("No Google token provided in backend");
       return res.status(400).json({ message: "No Google token provided" });
     }
 
+    console.log("Verifying token with Google Client ID:", process.env.GOOGLE_CLIENT_ID);
     const ticket = await googleClient.verifyIdToken({
       idToken: googleToken,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
-    const { email, name, sub: googleId } = payload;
+    const { email, name, picture, sub: googleId } = payload;
 
     if (!email) {
       return res.status(400).json({ message: "Invalid Google token - no email found" });
@@ -112,14 +115,25 @@ export const googleLogin = async (req, res) => {
         email,
         name,
         googleId,
+        profileImage: picture || "",
         homeCity: "",
-        travelStyle: "",
+        travelStyle: "Mid-range",
         interests: [],
       });
       await user.save();
-    } else if (!user.googleId) {
-      user.googleId = googleId;
-      await user.save();
+    } else {
+      let updated = false;
+      if (!user.googleId) {
+        user.googleId = googleId;
+        updated = true;
+      }
+      if (picture && !user.profileImage) {
+        user.profileImage = picture;
+        updated = true;
+      }
+      if (updated) {
+        await user.save();
+      }
     }
 
     const token = generateToken(user._id);

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import InputField from "../components/InputField";
 import { GoogleLogin } from "@react-oauth/google";
-import logo from "../assets/logo.jpg";
+import logo from "../assets/logo.png";
 
 export default function Signup() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -20,11 +20,12 @@ export default function Signup() {
 
     setLoading(true);
     try {
-     const res = await fetch("http://localhost:5000/api/auth/register", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(form),
-});
+      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${apiBase}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
 
       const data = await res.json();
@@ -47,14 +48,13 @@ export default function Signup() {
   // 🔹 Google Signup
   const handleGoogleSuccess = async (response) => {
     console.log("Google signup response:", response);
-    
     try {
-      console.log("Sending Google signup request to backend...");
-      const res = await fetch("http://localhost:5000/api/auth/google", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
+      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${apiBase}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ credential: response.credential }),
-});
+      });
 
 
       const data = await res.json();
@@ -65,7 +65,9 @@ export default function Signup() {
         alert("Google Signup successful!");
         navigate("/dashboard");
       } else {
-        alert(data.message || "Google signup failed");
+        const errMsg = data.message || "Google signup failed";
+        const errDetails = data.error ? "\nDetails: " + data.error : "";
+        alert(errMsg + errDetails);
       }
     } catch (err) {
       console.error("Google signup error:", err);
@@ -74,17 +76,17 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-300">
       {/* 🔹 Header */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-white/20">
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-lg border-b border-white/20 dark:border-slate-800/50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center py-4">
             <img src={logo} alt="PocketYatra Logo" className="h-12 w-12 rounded-full shadow-md mr-3" />
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
                 PocketYatra
               </h1>
-              <p className="text-xs text-gray-500">Your Travel Companion</p>
+              <p className="text-xs text-gray-500 dark:text-gray-450">Your Travel Companion</p>
             </div>
           </div>
         </div>
@@ -93,7 +95,7 @@ export default function Signup() {
       {/* 🔹 Centered Signup Card */}
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] py-12">
         <div className="w-full max-w-md">
-          <div className="bg-white/80 backdrop-blur-sm shadow-2xl rounded-3xl p-8 border border-white/20">
+          <div className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-sm shadow-2xl rounded-3xl p-8 border border-white/20 dark:border-slate-800/50 transition-all duration-300">
             {/* Header */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full mb-4 shadow-lg">
@@ -101,10 +103,10 @@ export default function Signup() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                 </svg>
               </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent mb-2">
                 Join PocketYatra
               </h2>
-              <p className="text-gray-600">Start your travel journey today</p>
+              <p className="text-gray-600 dark:text-gray-450">Start your travel journey today</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -152,10 +154,10 @@ export default function Signup() {
             {/* 🔹 Divider */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t border-gray-300 dark:border-slate-700"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                <span className="px-2 bg-white dark:bg-slate-900 text-gray-500 dark:text-gray-400 rounded-md">Or continue with</span>
               </div>
             </div>
 
@@ -169,9 +171,9 @@ export default function Signup() {
 
             {/* 🔹 Login Redirect */}
             <div className="text-center mt-8">
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Already have an account?{" "}
-                <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
+                <Link to="/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold transition-colors duration-200">
                   Sign in here
                 </Link>
               </p>
