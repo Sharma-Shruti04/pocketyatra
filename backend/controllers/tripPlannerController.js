@@ -195,7 +195,7 @@ Make sure to provide actual, real-world options (airlines, specific hotels, attr
       let responseText = "";
 
       if (apiKey.startsWith("sk-or-")) {
-        const model = process.env.AI_MODEL || "google/gemma-2-9b-it:free";
+        const model = process.env.AI_MODEL || "openrouter/free";
         console.log(`Calling OpenRouter with model: ${model}...`);
         const openRouterResponse = await axios.post(
           "https://openrouter.ai/api/v1/chat/completions",
