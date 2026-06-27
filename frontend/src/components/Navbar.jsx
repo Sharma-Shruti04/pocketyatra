@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import {
   FaHome,
@@ -42,6 +42,7 @@ export default function Navbar({ user }) {
     localStorage.setItem("darkMode", darkMode.toString());
   }, [darkMode]);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [currentUser, setCurrentUser] = useState(() => {
     if (user) return user;
@@ -66,7 +67,7 @@ export default function Navbar({ user }) {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   return (
