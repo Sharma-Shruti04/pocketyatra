@@ -144,12 +144,14 @@ export const planTrip = async (req, res) => {
 Dates: from ${startDate} to ${endDate} (${tripDays} days).
 Total Budget: ₹${budget} INR.
 
-First, evaluate if the total budget of ₹${budget} INR is realistic and sufficient to cover:
+First, evaluate if the total budget of ₹${budget} INR is sufficient to cover:
 1. Travel/Transportation from ${source} to ${destination} (e.g. flight/train/bus ticket).
 2. Basic accommodation for ${tripDays} days in ${destination}.
 3. Simple food and local sightseeing for the duration of ${tripDays} days.
 
-If the budget is NOT sufficient for a basic, realistic trip (considering the distance, number of days, and cost of living in ${destination}), you MUST return a JSON object with this schema:
+Note: Only mark "insufficientBudget" as true if the monetary amount (₹${budget}) is genuinely too low to cover these basic costs. Do NOT mark it as true due to time constraints, short duration, or tight travel schedules (e.g., if a 2-day trip is logistically tight but the budget of ₹${budget} is more than enough to pay for it, "insufficientBudget" MUST be false).
+
+If the budget amount of ₹${budget} INR is genuinely NOT sufficient for a basic trip of ${tripDays} days, you MUST return a JSON object with this schema:
 {
   "insufficientBudget": true,
   "message": "A friendly, detailed explanation of why the budget is insufficient, estimating the minimum realistic costs for travel (flight/train), hotels, and food, and suggesting a more realistic budget amount in Rupees."
